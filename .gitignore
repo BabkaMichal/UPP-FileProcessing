@@ -39,3 +39,11 @@
 
 # debug information files
 *.dwo
+/UPP_Semetralka/x64/Debug
+/.vs/UPP_Semetralka
+*.sln
+*.vcxproj
+*.filters
+*.user
+/mereni.csv
+/stanice.csv
