@@ -62,8 +62,6 @@ void loadCsv(const std::string& filename, std::unordered_map<int, std::vector<Me
 }
 
 void filterStations(std::unordered_map<int, std::vector<Measurement>>& stations) {
-    int original_count = stations.size();
-
     //iterating through map
     for (auto it = stations.begin(); it != stations.end(); ) {
         const auto& measurements = it->second;
@@ -74,7 +72,7 @@ void filterStations(std::unordered_map<int, std::vector<Measurement>>& stations)
             unique_years.insert(m.year);
         }
 
-        //sanity check - defensive
+        //sanity check
         if (unique_years.empty()) {
             it = stations.erase(it);
             continue;

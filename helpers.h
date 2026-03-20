@@ -32,9 +32,6 @@ struct MonthlyStats {
     //for fluctuations
     double min_yearly_avg = 9999.0;
     double max_yearly_avg = -9999.0;
-
-    //saving years with fluctuations
-    std::vector<int> fluctuations;
 };
 struct StationStats {
     //saving the station with its monthly stats
@@ -50,6 +47,9 @@ void accumulateStationData(const std::vector<Measurement>& measurements, YearAcc
 void computeStationAverages(const YearAccumulator& year_acc, const MonthAccumulator& month_acc, StationStats& st_stats);
 void processSingleStation(const std::vector<Measurement>& measurements, StationStats& st_stats, double& global_min, double& global_max);
 void calculateAverages(const std::unordered_map<int, std::vector<Measurement>>& stations, std::unordered_map<int, StationStats>& processed_stations, double& global_min, double& global_max);
+
+//fluctuations
+void detectFluctuations(const std::unordered_map<int, StationStats>& processed_stations);
 
 //preprocessing
 void loadCsv(const std::string& filename, std::unordered_map<int, std::vector<Measurement>>& stations);

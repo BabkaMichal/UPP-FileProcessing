@@ -15,8 +15,14 @@ int main() {
     double global_min = 0.0;
     double global_max = 0.0;
 
-    //calculate averages for other calculations
+    //calculating averages for other calculations
     calculateAverages(stations, processed_stations, global_min, global_max);
 
+    //detecting fluctuations
+    detectFluctuations(processed_stations);
+
+
+
+     
 	return 0;
 }
