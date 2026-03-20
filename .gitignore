@@ -47,3 +47,4 @@
 *.user
 /mereni.csv
 /stanice.csv
+*.svg
