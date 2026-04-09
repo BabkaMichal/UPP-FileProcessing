@@ -76,7 +76,7 @@ void generateMonthSVGs(const std::unordered_map<int, StationLocation>& locations
         base_svg.erase(svg_end_pos);
     }
     else {
-        std::cerr << "Chyba: Podkladove SVG nema ukoncujici tag </svg>\n";
+        std::cerr << "Error: missing ending tag </svg>\n";
         return;
     }
 
@@ -117,6 +117,6 @@ void generateMonthSVGs(const std::unordered_map<int, StationLocation>& locations
         //closing the svg
         out_file << "</svg>";
         out_file.close();
-        std::cout << "Vygenerovano: " << out_filename << "\n";
+        std::cout << "Generated: " << out_filename << "\n";
     }
 }

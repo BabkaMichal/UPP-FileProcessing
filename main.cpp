@@ -36,24 +36,35 @@ void runParallel(const char* stanicePath, const char* mereniPath) {
 int main(int argc, const char* argv[]) {
 
     if (argc < 4) {
-        std::cout << "Malo argumentu! \n" << "Zadejte ve formatu program stanice.csv mereni.csv --serial/parallel" << std::endl;
-    }
-
-    if (argv[3] == "--serial")
-    {
-        runSerial(argv[1], argv[2]);
-    }
-    else if (argv[3] == "--parallel")
-    {
-        runParallel(argv[1], argv[2]);
-    }
-    else
-    {
-        std::cout << "wrong parameter! Use --parallel or --serial" << std::endl;
+        std::cout << "Missing arguments! \n" << "Use format program_name stations.csv data.csv --serial/parallel" << std::endl;
         return 1;
     }
 
-    
+    const char* path_stanice = argv[2];
+    const char* path_mereni = argv[1];
+
+    std::string_view mode = argv[3];
+
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    if (mode == "--serial") {
+        std::cout << "Running serial version." << std::endl;
+        runSerial(path_stanice, path_mereni);
+    }
+    else if (mode == "--parallel") {
+        std::cout << "Running paralell version." << std::endl;
+        runParallel(path_stanice, path_mereni);
+    }
+    else {
+        std::cout << "Wrong arguments! Use --parallel or --serial" << std::endl;
+        return 1;
+    }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+
+    std::cout << "Time to finish: " << duration.count() << " ms." << std::endl;
 
 	return 0;
 }
