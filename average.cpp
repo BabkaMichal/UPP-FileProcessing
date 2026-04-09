@@ -66,3 +66,56 @@ void calculateAverages(const std::unordered_map<int, std::vector<Measurement>>& 
 
     std::cout << "Averages calculated! " << std::endl;
 }
+
+void calculateAveragesParallel(const std::unordered_map<int, std::vector<Measurement>>& stations, std::unordered_map<int, StationStats>& processed_stations, double& global_min, double& global_max) {
+    std::vector<int> station_ids;
+    station_ids.reserve(stations.size());
+
+    for (const auto& pair : stations) {
+        station_ids.push_back(pair.first);
+    }
+
+    unsigned int num_threads = std::thread::hardware_concurrency();
+    if (num_threads == 0) num_threads = 4;
+
+    std::mutex mtx;
+    int chunk_size = station_ids.size() / num_threads;
+    std::vector<std::thread> threads;
+
+    auto worker_process = [&](int start_idx, int end_idx) {
+        std::unordered_map<int, StationStats> local_processed;
+        double local_min = 9999.0;
+        double local_max = -9999.0;
+
+        for (int i = start_idx; i < end_idx; ++i) {
+            int id = station_ids[i];
+            const auto& measurements = stations.at(id);
+
+            if (isValidStation(measurements)) {
+                StationStats st_stats;
+                processSingleStation(measurements, st_stats, local_min, local_max);
+                for (const auto& month_pair : st_stats.months) {
+                    if (month_pair.second.overall_average < local_min) local_min = month_pair.second.overall_average;
+                    if (month_pair.second.overall_average > local_max) local_max = month_pair.second.overall_average;
+                }
+                local_processed[id] = st_stats;
+            }
+        }
+
+        std::lock_guard<std::mutex> lock(mtx);
+        if (local_min < global_min) global_min = local_min;
+        if (local_max > global_max) global_max = local_max;
+
+        for (const auto& pair : local_processed) {
+            processed_stations[pair.first] = pair.second;
+        }
+        };
+
+    for (unsigned int i = 0; i < num_threads; ++i) {
+        int start = i * chunk_size;
+        int end = (i == num_threads - 1) ? station_ids.size() : start + chunk_size;
+        threads.emplace_back(worker_process, start, end);
+    }
+
+    for (auto& t : threads) t.join();
+}

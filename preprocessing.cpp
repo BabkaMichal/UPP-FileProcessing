@@ -61,6 +61,7 @@ void loadCsv(const std::string& filename, std::unordered_map<int, std::vector<Me
     std::cout << "File loaded! " << std::endl;
 }
 
+
 void filterStations(std::unordered_map<int, std::vector<Measurement>>& stations) {
     //iterating through map
     for (auto it = stations.begin(); it != stations.end(); ) {
@@ -122,4 +123,37 @@ void filterStations(std::unordered_map<int, std::vector<Measurement>>& stations)
         }
     }
     std::cout << "Stations filtered! " << std::endl;
+}
+
+bool isValidStation(const std::vector<Measurement>& measurements) {
+    std::set<int> unique_years;
+    for (const auto& m : measurements) {
+        unique_years.insert(m.year);
+    }
+    if (unique_years.empty()) return false;
+
+    double avg_per_year = static_cast<double>(measurements.size()) / unique_years.size();
+    if (avg_per_year < AVERAGE_FILTER) return false;
+
+    bool has_5_consecutive = false;
+    if (unique_years.size() >= YEARS_IN_ROW_FILTER) {
+        int streak = 1;
+        auto year_it = unique_years.begin();
+        int prev_year = *year_it;
+        ++year_it;
+        for (; year_it != unique_years.end(); ++year_it) {
+            if (*year_it == prev_year + 1) {
+                streak++;
+                if (streak >= 5) {
+                    has_5_consecutive = true;
+                    break;
+                }
+            }
+            else {
+                streak = 1;
+            }
+            prev_year = *year_it;
+        }
+    }
+    return has_5_consecutive;
 }

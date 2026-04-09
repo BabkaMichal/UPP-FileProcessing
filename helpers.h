@@ -9,6 +9,8 @@
 #include <string_view>
 #include <chrono>
 #include <iomanip>
+#include <thread>
+#include <mutex>
 
 //constants
 const double AVERAGE_FILTER = 100;
@@ -62,6 +64,7 @@ void accumulateStationData(const std::vector<Measurement>& measurements, YearAcc
 void computeStationAverages(const YearAccumulator& year_acc, const MonthAccumulator& month_acc, StationStats& st_stats);
 void processSingleStation(const std::vector<Measurement>& measurements, StationStats& st_stats, double& global_min, double& global_max);
 void calculateAverages(const std::unordered_map<int, std::vector<Measurement>>& stations, std::unordered_map<int, StationStats>& processed_stations, double& global_min, double& global_max);
+void calculateAveragesParallel(const std::unordered_map<int, std::vector<Measurement>>& stations, std::unordered_map<int, StationStats>& processed_stations, double& global_min, double& global_max);
 
 //fluctuations
 void detectFluctuations(const std::unordered_map<int, StationStats>& processed_stations);
@@ -69,6 +72,7 @@ void detectFluctuations(const std::unordered_map<int, StationStats>& processed_s
 //preprocessing
 void loadCsv(const std::string& filename, std::unordered_map<int, std::vector<Measurement>>& stations);
 void filterStations(std::unordered_map<int, std::vector<Measurement>>& stations);
+bool isValidStation(const std::vector<Measurement>& measurements);
 
 //svg
 std::unordered_map<int, StationLocation> loadStationsCSV(const std::string& filename);

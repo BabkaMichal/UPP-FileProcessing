@@ -1,12 +1,12 @@
 #include "helpers.h"
 
-void runSerial(const char* stanicePath, const char* mereniPath) {
+static void runSerial(const char* stanicePath, const char* mereniPath) {
     //creating maps for preprocessed data
     std::unordered_map<int, std::vector<Measurement>> stations;
     std::unordered_map<int, StationLocation> stations_location;
 
     //loading the file
-    loadCsv(stanicePath, stations);
+    loadCsv(mereniPath, stations);
 
     //filtering the data
     filterStations(stations);
@@ -23,14 +23,49 @@ void runSerial(const char* stanicePath, const char* mereniPath) {
     detectFluctuations(processed_stations);
 
     //loading locations of stations
-    stations_location = loadStationsCSV(mereniPath);
+    stations_location = loadStationsCSV(stanicePath);
 
     //drawing the values into svg
     generateMonthSVGs(stations_location, processed_stations, global_min, global_max);
 }
 
-void runParallel(const char* stanicePath, const char* mereniPath) {
+static void runParallel(const char* stanicePath, const char* mereniPath) {
+    //creating maps for preprocessed data
+    std::unordered_map<int, std::vector<Measurement>> stations;
+    std::unordered_map<int, StationLocation> stations_location;
 
+    //loading stations and data at the same time
+    std::thread t_load_mereni([&]() {
+        loadCsv(mereniPath, stations);
+        });
+    std::thread t_load_stanice([&]() {
+        stations_location = loadStationsCSV(stanicePath);
+        });
+
+    //waitting to finish
+    t_load_mereni.join();
+    t_load_stanice.join();
+
+    //preparing variables for processing
+    std::unordered_map<int, StationStats> processed_stations;
+    double global_min = 9999.0;
+    double global_max = -9999.0;
+
+    //calculating averages multithreaded
+    calculateAveragesParallel(stations, processed_stations, global_min, global_max);
+
+    //drawing svg and calculating fluctuations at the same time
+    std::thread t_fluctuations([&]() {
+        detectFluctuations(processed_stations);
+        });
+
+    std::thread t_svgs([&]() {
+        generateMonthSVGs(stations_location, processed_stations, global_min, global_max);
+        });
+
+    //waiting to finish
+    t_fluctuations.join();
+    t_svgs.join();
 }
 
 int main(int argc, const char* argv[]) {
@@ -40,9 +75,8 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
 
-    const char* path_stanice = argv[2];
-    const char* path_mereni = argv[1];
-
+    const char* path_stanice = argv[1];
+    const char* path_mereni = argv[2];
     std::string_view mode = argv[3];
 
     auto start_time = std::chrono::high_resolution_clock::now();
@@ -52,7 +86,7 @@ int main(int argc, const char* argv[]) {
         runSerial(path_stanice, path_mereni);
     }
     else if (mode == "--parallel") {
-        std::cout << "Running paralell version." << std::endl;
+        std::cout << "Running parallel version." << std::endl;
         runParallel(path_stanice, path_mereni);
     }
     else {
