@@ -71,8 +71,9 @@ void detectFluctuations(const std::unordered_map<int, StationStats>& processed_s
 
 //preprocessing
 void loadCsv(const std::string& filename, std::unordered_map<int, std::vector<Measurement>>& stations);
+void loadCsvParallel(const std::string& filename, std::unordered_map<int, std::vector<Measurement>>& stations);
 void filterStations(std::unordered_map<int, std::vector<Measurement>>& stations);
-bool isValidStation(const std::vector<Measurement>& measurements);
+void filterStationsParallel(std::unordered_map<int, std::vector<Measurement>>& stations);
 
 //svg
 std::unordered_map<int, StationLocation> loadStationsCSV(const std::string& filename);

@@ -34,17 +34,14 @@ static void runParallel(const char* stanicePath, const char* mereniPath) {
     std::unordered_map<int, std::vector<Measurement>> stations;
     std::unordered_map<int, StationLocation> stations_location;
 
-    //loading stations and data at the same time
-    std::thread t_load_mereni([&]() {
-        loadCsv(mereniPath, stations);
-        });
-    std::thread t_load_stanice([&]() {
-        stations_location = loadStationsCSV(stanicePath);
-        });
+    //loading data
+    loadCsvParallel(mereniPath, stations);
+    
+    //loading stations
+    stations_location = loadStationsCSV(stanicePath);
 
-    //waitting to finish
-    t_load_mereni.join();
-    t_load_stanice.join();
+    //filtering the data
+    filterStationsParallel(stations);
 
     //preparing variables for processing
     std::unordered_map<int, StationStats> processed_stations;

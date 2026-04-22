@@ -91,15 +91,9 @@ void calculateAveragesParallel(const std::unordered_map<int, std::vector<Measure
             int id = station_ids[i];
             const auto& measurements = stations.at(id);
 
-            if (isValidStation(measurements)) {
-                StationStats st_stats;
-                processSingleStation(measurements, st_stats, local_min, local_max);
-                for (const auto& month_pair : st_stats.months) {
-                    if (month_pair.second.overall_average < local_min) local_min = month_pair.second.overall_average;
-                    if (month_pair.second.overall_average > local_max) local_max = month_pair.second.overall_average;
-                }
-                local_processed[id] = st_stats;
-            }
+            StationStats st_stats;
+            processSingleStation(measurements, st_stats, local_min, local_max);
+            local_processed[id] = st_stats;
         }
 
         std::lock_guard<std::mutex> lock(mtx);
